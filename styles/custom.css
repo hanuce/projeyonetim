@@ -1,0 +1,95 @@
+@import url('https://fonts.cdnfonts.com/css/source-sans-pro');
+
+:root{
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+/* Sayfanın tamamında fontu kullan */
+*, .stApp {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+/* Başlıklar ve Metin Boyutları */
+.stTitle, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.stTitle {
+    font-size: 2rem;
+}
+
+.stMarkdown h1 {
+    font-size: 1.75rem;
+}
+
+.stMarkdown h2 {
+    font-size: 1.5rem;
+}
+
+.stMarkdown h3 {
+    font-size: 1.25rem;
+}
+
+.stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+    font-size: 1rem;
+}
+
+/* Streamlit option_menu için özel stil ayarları */
+.stOptionMenu {
+    font-family: 'Kanit', sans-serif;
+}
+
+/* Mobil Cihazlara Göre Responsive Ayarlar */
+@media (max-width: 768px) {
+    .stTitle {
+        font-size: 1.5rem;
+    }
+
+    .stMarkdown h1 {
+        font-size: 1.5rem;
+    }
+
+    .stMarkdown h2 {
+        font-size: 1.25rem;
+    }
+
+    .stMarkdown h3 {
+        font-size: 1.1rem;
+    }
+
+    .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+        font-size: 0.95rem;
+    }
+
+    /* Diğer metinlerin boyutları da küçültüldü ancak okunabilir seviyede bırakıldı */
+    body, .stMarkdown p, .stMarkdown li {
+        font-size: 0.9rem;
+    }
+    .stContainer {
+        flex-direction: column; /* Küçük ekranlarda butonları dikey olarak hizalar */
+        gap: 10px; /* Butonlar arası dikey boşluk */
+    }
+}
+
+@media (max-width: 480px) {
+    .stTitle {
+        font-size: 1.25rem;
+    }
+
+    .stMarkdown h1 {
+        font-size: 1.25rem;
+    }
+
+    .stMarkdown h2 {
+        font-size: 1.1rem;
+    }
+
+    .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+        font-size: 1rem;
+    }
+
+    body, .stMarkdown p, .stMarkdown li {
+        font-size: 0.85rem;
+    }
+}

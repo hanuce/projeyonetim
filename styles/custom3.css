@@ -1,0 +1,28 @@
+    /* Ana containerin genişliğini ekranın %90'nını kaplayacak şekilde ayarlıyoruz */
+    .main .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 90%;
+    }
+
+    /* Scroll barın görünmemesi için body genişliğini de ayarlıyoruz */
+    body {
+        overflow-x: hidden;
+    }
+        /* Font boyutlarını ekran genişliğine göre ayarlıyoruz */
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 2.5vw;
+    }
+
+    p, div, button, input, label {
+        font-size: 1.2vw;
+    }
+    
+    /* Yeterince küçük ekranlarda fontların aşırı küçülmesini engellemek için minimum font boyutu */
+    h1, h2, h3, h4, h5, h6 {
+        font-size: min(2.5vw, 32px);
+    }
+
+    p, div, button, input, label {
+        font-size: min(1.2vw, 16px);
+    }
