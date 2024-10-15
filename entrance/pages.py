@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
+import sqlite3
 
 #pys sayfası
 def show_pys():
@@ -83,14 +84,15 @@ def show_ekip():
     with col2:
             st.markdown(
                 """
-                # Üsküdar Ahmet Yüksel Özemre Bilim ve Sanat Merkezi
-                * H.N.Cetinkaya (A.Y.O.B.S.M.)
-                # Proje Öğrencileri
-                * A.C.Karsli (S.O.A.A.L.)
-                * _B.Kuskonmaz (H.A.L.)_ (former)
-                * _I.Soysal (H.A.L.)_ (former)
-                * _I.T.Karadag (N.A.A.L.)_ (former)
-                * _S.Arslan (A.A.L.)_ (former)
+                ## Üsküdar Ahmet Yüksel Özemre Bilim ve Sanat Merkezi
+                ### Danışman
+                * H.N.Cetinkaya
+                ### Proje Öğrencileri
+                * A.C.Karsli
+                * _B.Kuskonmaz_ (former)
+                * _I.Soysal_ (former)
+                * _I.T.Karadag_ (former)
+                * _S.Arslan_ (former)
                 """, 
                 unsafe_allow_html=True
             )
@@ -152,3 +154,47 @@ def show_iletisim():
         st.write("")
         st.write("🕒 **Çalışma Saatleri:**")
         st.write("Hafta içi: ?? - ??")
+
+# Giriş yap sayfası
+def sign_in_page():
+    # Oturum kontrolü
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
+
+    # Veritabanı bağlantısı
+    conn = sqlite3.connect('databases/database.md')
+    cursor = conn.cursor()
+
+    # Kullanıcı adı ve şifre alanları
+    st.title("Giriş Yap")
+    username = st.text_input("Kullanıcı Adı:")
+    password = st.text_input("Şifre:", type="password")
+
+    # Giriş yap butonu
+    if st.button("Giriş Yap"):
+        if authenticate_user(username, password, cursor):
+            st.success("Başarıyla giriş yaptınız!")
+            st.session_state["authenticated"] = True
+            st.experimental_rerun()  # Oturum açıldıktan sonra sayfayı yeniden yükle
+        else:
+            st.error("Kullanıcı adı veya şifre yanlış!")
+
+    # Şifremi unuttum ve Üye ol bağlantıları
+    st.markdown("[Şifrenizi mi Unuttunuz?](#)", unsafe_allow_html=True)
+    st.markdown("[Üye Ol](#)", unsafe_allow_html=True)
+
+    # Yetkili kullanıcıyı yönlendirme
+    if st.session_state["authenticated"]:
+        web_app()
+
+    # Veritabanı bağlantısını kapat
+    conn.close()
+
+# Kullanıcı doğrulama işlevi
+def authenticate_user(username, password, cursor):
+    query = "SELECT * FROM users WHERE username = ? AND password = ?"
+    cursor.execute(query, (username, password))
+    result = cursor.fetchone()
+    if result:
+        return True
+    return False

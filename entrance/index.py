@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
-import sayfalar as sayfa
+import pages as pg
+
 
 
 st.set_page_config(
@@ -30,15 +31,15 @@ selected = option_menu(
 # Seçili öğeye göre içerik gösterimi
 with st.container():
     if selected == "PYS":
-        sayfa.show_pys()  # PYS (Anasayfa) sayfasını göster
+        pg.show_pys()  # PYS (Anasayfa) sayfasını göster
     elif selected == "Neden?":
-        sayfa.show_neden() # Neden sayfasını göster
+        pg.show_neden() # Neden sayfasını göster
     elif selected == "Ekibimiz":
-        sayfa.show_ekip() # Ekibimiz  sayfasını göster
+        pg.show_ekip() # Ekibimiz  sayfasını göster
     elif selected == "Ücretlendirme":
-        sayfa.show_ucret() # Ücretlendirme  sayfasını göster
+        pg.show_ucret() # Ücretlendirme  sayfasını göster
     elif selected == "İletişim":
-        sayfa.show_iletisim() # İetlişim  sayfasını göster
+        pg.show_iletisim() # İetlişim  sayfasını göster
 
 
 
