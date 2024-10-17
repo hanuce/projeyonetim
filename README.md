@@ -1,4 +1,4 @@
-# Proje YÖnetim Sistemi
+# Proje Yönetim Sistemi
 
 Basit bir streamlit uygulaması
 

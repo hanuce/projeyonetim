@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
-import subprocess
+import entrance.pages as pg
+import apps.web_app as pys_app
 import sqlite3
-
 
 st.set_page_config(
     page_title="Proje Yönetim",
@@ -15,6 +15,40 @@ st.set_page_config(
 with open("styles/custom.css") as css_file:
     st.markdown(f"<style>{css_file.read()}</style>", unsafe_allow_html=True)
 
-# index.py'ı çalıştır
-subprocess.run(['streamlit', 'run', 'entrance/index.py'])
 
+logo_url = "https://via.placeholder.com/80"  # Sözde logo resmi
+logo_option = f'<img src="{logo_url}" style="height: 50px;">'  # Logo yüksekliği ayarlandı
+
+
+selected = option_menu(
+    menu_title=None,  # Menü başlığı
+    options=["PYS","Neden?", "Ekibimiz", "Ücretlendirme", "İletişim","Giriş Yap"],  # Menü öğeleri
+    icons=["grid-3x3-gap-fill","info-circle", "people", "wallet2", "envelope", "box-arrow-in-right"],  # İkonlar (isteğe bağlı)
+    menu_icon=None,  # Menü ikonu
+    default_index=0,  # Varsayılan seçili öğe
+    orientation="horizontal", # Yatay menü
+)
+
+# Seçili öğeye göre içerik gösterimi
+with st.container():
+    if selected == "PYS":
+        pg.show_pys()  # PYS (Anasayfa) sayfasını göster
+    elif selected == "Neden?":
+        pg.show_neden() # Neden sayfasını göster
+    elif selected == "Ekibimiz":
+        pg.show_ekip() # Ekibimiz  sayfasını göster
+    elif selected == "Ücretlendirme":
+        pg.show_ucret() # Ücretlendirme  sayfasını göster
+    elif selected == "İletişim":
+        pg.show_iletisim() # İetlişim  sayfasını göster
+    elif selected == "Giriş Yap":
+        pg.show_girisyap() # Giriş Yap  sayfasını göster
+
+
+
+st.markdown("---")  # Ayrım çizgisi
+footer_content = """
+© 2024. Görseller: <a href='https://undraw.co/illustrations'> undraw.co</a> | Özgün Hakları Saklıdır.
+<a href='#'>Github</a> | <a href='#'>X.com</a>
+"""
+st.markdown(footer_content, unsafe_allow_html=True)  # Footer içeriği

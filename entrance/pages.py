@@ -156,45 +156,53 @@ def show_iletisim():
         st.write("Hafta içi: ?? - ??")
 
 # Giriş yap sayfası
-def sign_in_page():
-    # Oturum kontrolü
-    if "authenticated" not in st.session_state:
-        st.session_state["authenticated"] = False
+def show_girisyap():
+        # Ortalamak için 3 sütun oluşturuyoruz, orta sütun aktif kullanılıyor.
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        # Giriş ve Üye Ol sütunu tabs ile oluşturuyoruz
+        tabs = st.tabs(["Giriş Yap", "Üye Ol"])
 
-    # Veritabanı bağlantısı
-    conn = sqlite3.connect('databases/database.md')
-    cursor = conn.cursor()
+        # Giriş Yap sekmesi
+        with tabs[0]:
+            # Kullanıcı adı ve şifre giriş alanları
+            st.text_input("Kullanıcı E-Posta:", key="username")
+            st.text_input("Şifre:", type="password", key="password")
+            if st.button("Giriş Yap"):
+                st.success("Giriş başarılı!")
+            st.info("Şifrenizi unuttuysanız sıfırlamak için lütfen kayıtlı olduğunuz BİLSEM'e başvurun.")
+            
 
-    # Kullanıcı adı ve şifre alanları
-    st.title("Giriş Yap")
-    username = st.text_input("Kullanıcı Adı:")
-    password = st.text_input("Şifre:", type="password")
+        # Üye Ol sekmesi
+        with tabs[1]:
+            st.info("Kayıt işleminden sonra bilgileriniz kurumunuza sistem üzerinden onaylanmak üzere düşecektir. "
+            "Onaylanmak ve sistemi kullanmak için kurumunuza başvurunuz.")
+            bilsem = st.selectbox("Kayıtlı olduğunuz BİLSEM'i seçiniz. (Aramak için yazmaya başlayınız.)", ["BİLSEM A", "BİLSEM B", "BİLSEM C"])
+            col_type, col_gender = st.columns([1,1])
+            with col_type:
+                user_type = st.radio("", ["Öğrenci", "Öğretmen"], index=0)
+            with col_gender:
+                gender = st.radio("", ["Kadın", "Erkek"], index=0)
 
-    # Giriş yap butonu
-    if st.button("Giriş Yap"):
-        if authenticate_user(username, password, cursor):
-            st.success("Başarıyla giriş yaptınız!")
-            st.session_state["authenticated"] = True
-            st.experimental_rerun()  # Oturum açıldıktan sonra sayfayı yeniden yükle
-        else:
-            st.error("Kullanıcı adı veya şifre yanlış!")
+            col_branch_or_level, col_bilsem_no = st.columns([1,1])
+            with col_branch_or_level:
+                if user_type == "Öğrenci":
+                    class_grade = st.selectbox("Sınıf", ["9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf"])
+                else:
+                    branch = st.selectbox("Branş (Aramak için yazmaya başlayınız.)", ["Matematik", "Fizik", "Biyoloji", "Türk Dili ve Edebiyatı"])
+            with col_bilsem_no:
+                bilsem_no = st.text_input("BİLSEM NO", disabled=(user_type == "Öğretmen"))
+            
+            col_name, col_last_name = st.columns([1,1])
+            with col_name:
+                name = st.text_input("İsim")
+            with col_last_name:
+                last_name = st.text_input("Soyisim")
+            
+            email = st.text_input("E-posta")
+            password = st.text_input("Şifre", type="password")
 
-    # Şifremi unuttum ve Üye ol bağlantıları
-    st.markdown("[Şifrenizi mi Unuttunuz?](#)", unsafe_allow_html=True)
-    st.markdown("[Üye Ol](#)", unsafe_allow_html=True)
-
-    # Yetkili kullanıcıyı yönlendirme
-    if st.session_state["authenticated"]:
-        web_app()
-
-    # Veritabanı bağlantısını kapat
-    conn.close()
-
-# Kullanıcı doğrulama işlevi
-def authenticate_user(username, password, cursor):
-    query = "SELECT * FROM users WHERE username = ? AND password = ?"
-    cursor.execute(query, (username, password))
-    result = cursor.fetchone()
-    if result:
-        return True
-    return False
+            # Üye Ol butonu
+            if st.button("Üye Ol"):
+                st.success("Kayıt başarılı! Sistemi kullanmaya başlamak için lütfen kayıtlı olduğunuz BİLSEM'den başvurunuzu onaylatın.")

@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
-import pages as pg
+import entrance.pages as pg
 
 
 
