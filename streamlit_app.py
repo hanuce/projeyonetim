@@ -1,50 +1,50 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
-import entrance.pages as pg
-import apps.web_app as pys_app
-import sqlite3
+from entrance.index import show_page
+import apps.web_app as app_module
 
 st.set_page_config(
     page_title="Proje Yönetim",
     page_icon=":flag-tr:",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="auto",
 )
 
 # CSS dosyasını yüklemek
 with open("styles/custom.css") as css_file:
     st.markdown(f"<style>{css_file.read()}</style>", unsafe_allow_html=True)
 
+if 'is_logged_in' not in st.session_state: st.session_state.is_logged_in = False
 
-logo_url = "https://via.placeholder.com/80"  # Sözde logo resmi
-logo_option = f'<img src="{logo_url}" style="height: 50px;">'  # Logo yüksekliği ayarlandı
+# Kullanıcı girşi yapmayanlar sitenin karşılama sayfalarını gösterme
+def main_page():
 
+    logo_url = "https://via.placeholder.com/80"  # Sözde logo resmi
+    logo_option = f'<img src="{logo_url}" style="height: 50px;">'  # Logo yüksekliği ayarlandı
 
-selected = option_menu(
-    menu_title=None,  # Menü başlığı
-    options=["PYS","Neden?", "Ekibimiz", "Ücretlendirme", "İletişim","Giriş Yap"],  # Menü öğeleri
-    icons=["grid-3x3-gap-fill","info-circle", "people", "wallet2", "envelope", "box-arrow-in-right"],  # İkonlar (isteğe bağlı)
-    menu_icon=None,  # Menü ikonu
-    default_index=0,  # Varsayılan seçili öğe
-    orientation="horizontal", # Yatay menü
-)
+    # option-menu kütüphanesi ile yatay menü yapımı ve menüler
+    selected = option_menu(
+        menu_title=None,  # Menü başlığı
+        options=["PYS","Neden?", "Ekibimiz", "Ücretlendirme", "İletişim","Giriş Yap"],  # Menü öğeleri
+        icons=["grid-3x3-gap-fill","info-circle", "people", "wallet2", "envelope", "box-arrow-in-right"],  # İkonlar (isteğe bağlı)
+        menu_icon=None,  # Menü ikonu
+        default_index=0,  # Varsayılan seçili öğe
+        orientation="horizontal", # Yatay menü
+    )
 
-# Seçili öğeye göre içerik gösterimi
-with st.container():
-    if selected == "PYS":
-        pg.show_pys()  # PYS (Anasayfa) sayfasını göster
-    elif selected == "Neden?":
-        pg.show_neden() # Neden sayfasını göster
-    elif selected == "Ekibimiz":
-        pg.show_ekip() # Ekibimiz  sayfasını göster
-    elif selected == "Ücretlendirme":
-        pg.show_ucret() # Ücretlendirme  sayfasını göster
-    elif selected == "İletişim":
-        pg.show_iletisim() # İetlişim  sayfasını göster
-    elif selected == "Giriş Yap":
-        pg.show_girisyap() # Giriş Yap  sayfasını göster
+    # Seçili menüye göre içerik gösterimi
+    with st.container():
+        show_page(selected)
 
+def app_page():
+    app_module.show_apps()
 
+    
+# Kullanıcı login olduysa app_page fonksiyonu değilse main_page fonskiyonunu çalıştır.
+if st.session_state.is_logged_in:
+    app_page()
+else:
+    main_page()
 
 st.markdown("---")  # Ayrım çizgisi
 footer_content = """
