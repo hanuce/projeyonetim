@@ -1,0 +1,6 @@
+[theme]
+base="dark"
+primaryColor="#2684ff"
+
+[ui]
+hideTopBar=true

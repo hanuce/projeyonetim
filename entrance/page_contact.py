@@ -3,7 +3,7 @@ import streamlit as st
 # iletişim sayfası
 def show():
     # İki sütunlu yapı oluşturuluyor.
-    col1, col2 = st.columns([5,3])
+    col1, col2 = st.columns([5,3], border=True)
 
     # Sol sütun: Google Maps Embed
     with col1:

@@ -3,7 +3,7 @@ import streamlit as st
 #ekibimiz sayfası
 def show():
     # İki sütunlu yapı oluşturuluyor.
-    col1, col2 = st.columns([2,5])
+    col1, col2 = st.columns([3,5], border=True)
 
     # Sol tarafta sözde resim (bir kutu veya metin) olacak.
     with col1:
