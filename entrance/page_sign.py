@@ -1,130 +1,120 @@
+#page_signin.py
 import streamlit as st
-import sqlite3
-import re
+from core.user_manager import UserManager
+from core.session_manager import SessionManager
+from core.static_manager import StaticManager
+import time
 
-# Giriş yap sayfası
+# Kullanıcı, oturum ve statik yöneticisi örnekleri
+user_manager = UserManager()
+session_manager = SessionManager()
+static_manager = StaticManager()
+
+# Streamlit UI
 def show():
-    # SQLite veritabanına bağlanma
-    conn = sqlite3.connect('databases/database.db')
-    cursor = conn.cursor()
-    # border için
-    col1,col2,col3 = st.columns([3,14,3],)
+    col1, col2, col3 = st.columns([3, 14, 3])
     with col1:
         st.empty()
     with col2:
         with st.container(border=True):
-            # Giriş ve Üye Ol sütunu tabs ile oluşturuyoruz
             tabs = st.tabs(["Giriş Yap", "Üye Ol", "Kurum Kaydı"])
 
-            # Giriş Yap sekmesi
+            # Giriş Yap Sekmesi
             with tabs[0]:
-                # Kullanıcı adı ve şifre giriş alanları
-                user_email = st.text_input("Kullanıcı E-Posta:", key="user_email")
-                user_password = st.text_input("Şifre:", type="password", key="user_password")
+                user_email = st.text_input("Kullanıcı E-Posta:", placeholder="E-Posta Adresinizi Giriniz")
+                user_password = st.text_input("Şifre:", type="password", placeholder="Şifrenizi Giriniz")
                 if st.button("Giriş Yap"):
-                    st.success("Giriş başarılı!")
-                    user_email = st.session_state.user_email
-                    user_password = st.session_state.user_password
-                    st.session_state.is_logged_in = True
-                    st.rerun()
-                st.info("Şifrenizi unuttuysanız sıfırlamak için lütfen kayıtlı olduğunuz BİLSEM'e başvurun.")
-                
+                    if user_manager.verify_password(user_email, user_password):
+                        st.success("Giriş başarılı!")
+                        user_id = user_manager.get_user_by_email(user_email)["user_id"]
+                        session_id = session_manager.create_session(user_id)
+                        st.session_state.user_id = user_id
+                        st.session_state.session_id = session_id
+                        st.rerun()
+                    else:
+                        st.error("E-posta veya şifre yanlış. Lütfen tekrar deneyin.")
 
-            # Üye Ol sekmesi
+            # Üye Ol Sekmesi
             with tabs[1]:
-                st.info("Kayıt işleminden sonra bilgileriniz seçtiğiniz BİLSEM'e onaya gönderilecektir. Bu sebeple doğru BİLSEM'i seçmeniz önemlidir. "
-                "Onaylanmak ve sistemi kullanmak için kurumunuza başvurunuz. "
-                "Eğer yanlış BİLSEM üzerinden kayıt oluşturduysanız düzelttirmek için yine kurumunuza başvurunuz. "
-                "Tüm alanlar zorunludur.")
-                # Veritabanından bilsemleri getiriyoruz.
-                cursor.execute("SELECT institute_name FROM institutes")
-                institutes_details = [row[0] for row in cursor.fetchall()]
-                institutes_details = sorted(institutes_details)
-                user_institute = st.selectbox("Kayıtlı olduğunuz BİLSEM'i seçiniz. (Aramak için yazmaya başlayınız.)", institutes_details)
+                st.info("*Tüm alanlar zorunludur.")
+                institutes = static_manager.get_institutes()
+                institute_options = {title: id for id, title in institutes}  # {title: id}
+                user_institute = st.selectbox(
+                    "Kayıt olacağınız BİLSEM'i seçiniz. *",
+                    options=list(institute_options.keys()),  # Show titles
+                    placeholder="Aramak için yazmaya başlayınız",
+                    index=None
+                )
 
-                col_type, col_gender = st.columns([1,1])
+                col_type, col_gender, col_branch_level = st.columns([1, 1, 1])
                 with col_type:
-                    user_type = st.radio("Seçiniz", ["Öğrenci", "Öğretmen"], index=0, horizontal=True)
+                    user_type = st.radio("Rolünüz *", ["Öğrenci", "Öğretmen / Yönetici / Danışman"], index=0, horizontal=True)
+
                 with col_gender:
-                    gender = st.radio("Seçiniz", ["Kadın", "Erkek"], index=0, horizontal=True)
+                    user_gender = st.radio("Cinsiyet *", ["Kadın", "Erkek"], index=0, horizontal=True)
 
-                col_branch_or_level, col_user_institute_id = st.columns([1,1])
-
-                with col_branch_or_level:
-
-                    # Veritabanından öğrenciler ve öğretmenler için seçenekleri getiriyoruz.
+                with col_branch_level:
                     if user_type == "Öğrenci":
-                        cursor.execute(f"SELECT user_role_detail FROM user_roles WHERE user_type = ?",(2,))
-                        user_details = [row[0] for row in cursor.fetchall()]
-                        user_role_detail = st.selectbox("Sınıf", user_details)
+                        student_levels = static_manager.get_student_levels()
+                        level_options = {detail: id for id, detail in student_levels}  # {detail: id}
+                        user_detail = st.selectbox(
+                            "Sınıf *",
+                            options=list(level_options.keys()),  # Show details
+                            placeholder="Seçiniz",
+                            index=None
+                        )
+                        user_detail_id = level_options.get(user_detail) if user_detail else None
                     else:
-                        cursor.execute(f"SELECT user_role_detail FROM user_roles WHERE user_type = ?",(3,))
-                        user_details = [row[0] for row in cursor.fetchall()]
-                        user_role_detail = st.selectbox("Branş (Aramak için yazmaya başlayınız.)", user_details)
+                        teacher_branches = static_manager.get_teacher_branches()
+                        branch_options = {detail: id for id, detail in teacher_branches}  # {detail: id}
+                        user_detail = st.selectbox(
+                            "Branş *",
+                            options=list(branch_options.keys()),  # Show details
+                            placeholder="Aramak için yazmaya başlayınız",
+                            index=None
+                        )
+                        user_detail_id = branch_options.get(user_detail) if user_detail else None
 
-                with col_user_institute_id:
-                    user_institute_id = st.text_input("BİLSEM NO", 0, disabled=(user_type == "Öğretmen"), max_chars=4)
-                    if user_type == "Öğretmen": user_institute_id = "8100" # öğrenci hariç tüm kullanıcılarda institute_id_no 8100 olacak
-                    
-                    
-                col_user_name, col_user_last_name = st.columns([1,1])
-
+                col_user_name, col_user_last_name = st.columns([1, 1])
                 with col_user_name:
-                    user_name = st.text_input("İsim", placeholder="İsim", max_chars=35)
-
+                    user_name = st.text_input("İsim *", placeholder="İsim", max_chars=35)
                 with col_user_last_name:
-                    user_last_name = st.text_input("Soyisim", placeholder="Soyisim", max_chars=35)
-                
-                # Yazılan eposta adresi görünüm olarak bir epostaya benziyor mu? RegEx.
-                def is_valid_email(user_email):
-                    # E-posta için regex deseni
-                    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-                    return re.match(pattern, user_email) is not None
+                    user_last_name = st.text_input("Soyisim *", placeholder="Soyisim", max_chars=35)
 
-                user_email = st.text_input("E-Posta", placeholder="e-posta@adres.com",max_chars=46)
+                user_email = st.text_input("E-Posta *", placeholder="e-posta@adres.com", max_chars=46)
+                user_password = st.text_input("Şifre *", type="password", placeholder="Şifre", max_chars=16)
+                st.info("Şifre en az 6 karakter uzunluğunda, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermeli")
 
-                # Yazılan şifre 6 karakter, özel karakter ve Upper_Lower Case karşılıyor mu? RegEx.
-                def is_valid_password(user_password):
-                    # Şifrenin en az 6 karakter olup olmadığını kontrol et
-                    if len(user_password) < 6:
-                        return False
-                    # Büyük harf, küçük harf, rakam ve özel karakter kontrolü
-                    pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.,;!+\-*:%()=?_]).+$'
-                    return re.match(pattern, user_password) is not None
-
-                user_password = st.text_input("Şifre", type="password",max_chars=16)
-                st.info("Şifre 6-16 karakter uzunluğunda, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermeli")
-
-                # Üye Ol butonu
                 if st.button("Üye Ol"):
-                    routing = 1
-                    if not user_institute: st.warning("Geçersiz Kurum. Lütfen listeden seçiniz.")
-                    elif not user_role_detail: st.warning("Geçersiz Branş veya Sınıf bilgisi. Lütfen listeden seçiniz.")
-                    elif not user_institute_id.isnumeric() or user_institute_id == "0": st.warning("Geçersiz BİLSEM No girdiniz. Bilsem numaranızı 'https://bilsem.meb.gov.tr/BLSLoginOgr.aspx' adresinden öğrenebilirsiniz")
-                    elif not user_name: st.warning("İsim giriniz.")
-                    elif not user_last_name: st.warning("Soyisim giriniz")
-                    elif not is_valid_email(user_email):
-                        st.warning("Geçersiz e-posta formatı. Lütfen geçerli bir e-posta adresi girin.")
-                    elif not is_valid_password: st.warning("Şifre kurallara uymuyor: En az 6 Karakter, büyük-küçük harf, özel karakter ve rakam içermeli.")
-                    elif not user_password: st.warning("Şifre Giriniz")
-                    elif not is_valid_password(user_password): st.warning(r"Kurallara uygun şifre giriniz. En az 6 karakter, En az 1'er tane büyük-küçük harf, rakam ve özel karakter (.,;!+\-*:%()=?_) içermelidir.")
-
+                    if not all([user_name, user_last_name, user_email, user_password, user_institute, user_detail]):
+                        st.error("Lütfen tüm alanları doldurun.")
                     else:
-                        cursor.execute("SELECT user_email FROM user_basics WHERE user_email = ?", (user_email,))
-                        email_exists = cursor.fetchone()
-                        if email_exists:
-                            st.warning(f"Bu e-posta adresi zaten kayıtlı: {user_email}")
+                        user_data = {
+                            "user_name": user_name,
+                            "user_last_name": user_last_name,
+                            "user_email": user_email,
+                            "user_password": user_password,
+                            "user_institute_id": institute_options[user_institute],  # Use institute ID
+                            "user_main_role": 507 if user_type == "Öğrenci" else 506,  # 507 for student, 506 for teacher
+                            "user_detail_id": user_detail_id,  # Use level_id or branch_id
+                            "gender": 0 if user_gender == "Kadın" else 1, # 0 for male, 1 for female
+                        }
+                        if user_manager.register_user(user_data):
+                            st.success("Kullanıcı kaydedildi! Giriş yapılıyor...")
+                            user_id = user_manager.get_user_by_email(user_email)["user_id"]
+                            session_id = session_manager.create_session(user_id)
+                            st.session_state.user_id = user_id
+                            st.session_state.session_id = session_id
+                            time.sleep(0.5)
+                            st.rerun()
                         else:
-                            conn.close()
-                            #sign_control.login(user_name = user_name, )
-                            st.success("Kayıt başarılı! Sistemi kullanmaya başlamak için lütfen kayıtlı olduğunuz BİLSEM'den başvurunuzu onaylatın.")
-            # Kurum kaydı sekmesi
+                            st.error("Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.")
+
+            # Kurum Kaydı Sekmesi
             with tabs[2]:
                 st.info("Tüm kurumlar sisteme kayıtlıdır.")
                 st.info("Kullanıcı adınız okula ait meb.k12.tr e-posta (kurumkodu@meb.k12.tr) adresinizdir.")
                 st.info("Şifrenizi almak için veya şifre sıfırlamak için meb.k12.tr e-postanızdan admin@pys.com'a e-posta yollayınız.")
-                st.info("Yeni kurum kaydı için de aynı adrese meb.k12.tr e-postanızdan durumu açıklayan bir mail atınız.")
-
-
-        with col3:
-            st.empty()
+                st.info("Yeni kurum kaydı için admin@pys.com'a meb.k12.tr uzantılı e-postanızdan durumu açıklayan bir mail atınız.")
+    with col3:
+        st.empty()
